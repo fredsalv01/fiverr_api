@@ -7,9 +7,13 @@ import messageRoute from "./routes/message.route.js";
 import orderRoute from "./routes/order.route.js";
 import reviewRoute from "./routes/review.route.js";
 import conversationRoute from "./routes/conversation.route.js";
+import authRoute from './routes/auth.route.js'
+import cookieParser from "cookie-parser";
 
 const app = express();
 dotenv.config();
+app.use(express.json());
+app.use(cookieParser());
 
 mongoose.set("strictQuery", true);
 const connect = async () => {
@@ -24,7 +28,7 @@ const connect = async () => {
   }
 };
 
-app.use(express.json());
+app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
 app.use("/api/gigs", gigRoute);
 app.use("/api/messages", messageRoute);
