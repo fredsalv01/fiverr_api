@@ -1,36 +1,35 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { createError } from "../utils/createError.js";
 
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
   try {
     const hash = bcrypt.hashSync(req.body.password, 10);
     const newUser = new User({ ...req.body, password: hash });
     await newUser.save();
     res.status(201).send("User created!");
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Something went wrong!");
+    next(createError(400, error.message));
   }
 };
 
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   try {
     const { password, email, username } = req.body;
+
     if (!password || (!email && !username)) {
-      return res
-        .status(400)
-        .send("Please provide email or username and password");
+      return next(err);
     }
     const user = await User.findOne({
       $or: [{ email }, { username }],
     });
     if (!user) {
-      return res.status(400).send("Invalid email or username");
+      return next(createError(404, "User not found"));
     }
     const validatePassword = bcrypt.compareSync(password, user.password);
     if (!validatePassword) {
-      return res.status(400).send("Invalid password");
+      return next(createError(400, "Invalid password"));
     }
     // TODO: Generate token
     const token = jwt.sign(
@@ -48,31 +47,33 @@ export const login = async (req, res) => {
       .status(200)
       .send({ ...userWithoutPassword, token });
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Something went wrong!");
+    next(createError(400, error.message));
   }
 };
 
 export const logout = async (req, res) => {
   try {
-    res.clearCookie("accessToken").send("Logged out!");
+    res.clearCookie("accessToken", {
+      sameSite: "none",
+      secure: true,
+    }).status(200).send("Logged out!");
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Something went wrong!");
+    next(createError(500, "Something went wrong!"));
   }
 };
 
 export const currentUser = async (req, res) => {
   try {
-    const { user } = req;
+    const { userId } = req;
+    const user = User.findById(userId);
     if (!user) {
-      return res.status(401).send("Unauthorized");
+      return next(createError(401, "Unauthorized"));
     }
     const { password: _, ...userWithoutPassword } = user._doc;
     res.status(200).send({ ...userWithoutPassword });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Something went wrong!");
+    next(createError(500, "Something went wrong!"));
   }
 };
 
@@ -80,15 +81,15 @@ export const refreshToken = async (req, res) => {
   try {
     const token = req.cookies.accessToken;
     if (!token) {
-      return res.status(401).send("Unauthorized");
+      return next(createError(401, "Unauthorized"));
     }
     jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
       if (err) {
-        return res.status(401).send("Unauthorized");
+        return next(createError(401, "Unauthorized"));
       }
       const user = await User.findById(decoded.id);
       if (!user) {
-        return res.status(401).send("Unauthorized");
+        return next(createError(401, "Unauthorized"));
       }
       const newToken = jwt.sign(
         { id: user._id, isSeller: user.isSeller },
@@ -105,7 +106,6 @@ export const refreshToken = async (req, res) => {
         .send({ token: newToken });
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Something went wrong!");
+    next(createError(500, "Something went wrong!"));
   }
 };
