@@ -9,11 +9,13 @@ import reviewRoute from "./routes/review.route.js";
 import conversationRoute from "./routes/conversation.route.js";
 import authRoute from "./routes/auth.route.js";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 const app = express();
 dotenv.config();
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({ origin: "localhost:5117", credentials: true }));
 
 mongoose.set("strictQuery", true);
 const connect = async () => {
