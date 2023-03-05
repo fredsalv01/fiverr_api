@@ -6,7 +6,7 @@ export const createReview = async (req, res, next) => {
   if (req.isSeller) return next(createError(403, "Seller can't review"));
   const newReview = new Review({
     gigId: req.body.gigId,
-    userId: req.body.userId,
+    userId: req.userId,
     star: req.body.star,
     desc: req.body.desc,
   });
@@ -28,7 +28,7 @@ export const createReview = async (req, res, next) => {
 };
 export const getReviews = async (req, res, next) => {
   try {
-    const reviews = await Review.find({ gigId: req.body.gigId });
+    const reviews = await Review.find({ gigId: req.params.id });
     res.status(200).json(reviews);
   } catch (error) {
     next(error);
@@ -36,6 +36,8 @@ export const getReviews = async (req, res, next) => {
 };
 export const deleteReview = async (req, res, next) => {
   try {
+    await Review.findByIdAndDelete(req.params.id);
+    res.status(200).json("Review deleted");
   } catch (error) {
     next(error);
   }
