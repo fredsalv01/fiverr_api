@@ -1,5 +1,5 @@
-import Gig from "../models/gig.model";
-import { createError } from "../utils/createError";
+import Gig from "../models/gig.model.js";
+import { createError } from "../utils/createError.js";
 
 export const createGig = async (req, res, next) => {
   if (!req.isSeller)
@@ -57,7 +57,7 @@ export const getGigs = async (req, res) => {
     }),
   };
   try {
-    const gigs = await Gig.find(filters);
+    const gigs = await Gig.find(filters).sort({ [q.sort]: -1 });
     res.status(200).json(gigs);
   } catch (error) {
     next(error);
