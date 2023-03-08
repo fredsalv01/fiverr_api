@@ -21,11 +21,10 @@ export const createConversation = async (req, res, next) => {
 export const updateConversation = async (req, res, next) => {
   try {
     const updatedConversation = await Conversation.findByIdAndUpdate(
-      { id: req.params.id },
+      { _id: req.params.id },
       {
         $set: {
-          readBySeller: req.isSeller,
-          readByBuyer: !req.isSeller,
+          ...(req.isSeller ? { readBySeller: true } : { readByBuyer: true }),
         },
       },
       { new: true }
@@ -50,10 +49,7 @@ export const getConversation = async (req, res, next) => {
 export const getConversations = async (req, res, next) => {
   try {
     const conversations = await Conversation.find({
-      $or: [
-        { sellerId: req.userId },
-        { buyerId: req.userId },
-      ],
+      $or: [{ sellerId: req.userId }, { buyerId: req.userId }],
     });
     res.status(200).json(conversations);
   } catch (error) {
