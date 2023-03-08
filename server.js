@@ -15,7 +15,7 @@ const app = express();
 dotenv.config();
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: "localhost:5117", credentials: true }));
+app.use(cors({ credentials: true }));
 
 mongoose.set("strictQuery", true);
 const connect = async () => {
@@ -29,6 +29,9 @@ const connect = async () => {
     console.error(error);
   }
 };
+app.use("/", (req, res) => {
+  res.json("Sucessfull");
+});
 
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
