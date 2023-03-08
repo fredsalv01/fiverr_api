@@ -1,32 +1,32 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-const ConversationSchema = new Schema(
+const conversationSchema = new Schema(
   {
     id: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
     sellerId: {
       type: String,
-      required: true
+      required: true,
     },
     buyerId: {
       type: String,
-      required: true
+      required: true,
     },
     readBySeller: {
       type: Boolean,
-      required: true
+      required: true,
     },
     readByBuyer: {
       type: Boolean,
-      required: true
+      required: true,
     },
     lastMessage: {
       type: String,
-      required: false
+      required: false,
     },
   },
   {
@@ -34,4 +34,4 @@ const ConversationSchema = new Schema(
   }
 );
 
-export default mongoose.model("Conversation", ConversationSchema);
+export default mongoose.model("Conversation", conversationSchema);
