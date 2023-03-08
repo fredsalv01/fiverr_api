@@ -29,7 +29,7 @@ const connect = async () => {
     console.error(error);
   }
 };
-app.use("/", (req, res) => {
+app.use("/api/successfull", (req, res) => {
   res.json("Sucessfull");
 });
 

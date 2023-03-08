@@ -23,7 +23,6 @@ export const createOrder = async (req, res, next) => {
 };
 
 export const getOrders = async (req, res, next) => {
-  console.log(req.isSeller, req.userId);
   const orders = await Order.find({
     ...(req.isSeller ? { sellerId: req.userId } : { buyerId: req.userId }),
     isCompleted: true,
@@ -46,10 +45,7 @@ export const getOrder = async (req, res, next) => {
 
 export const intent = async (req, res, next) => {
   try {
-    console.log("llego el pago");
-    const stripe = new Stripe(
-      "sk_test_51KkJ4qCn7TBsELSeg5BWk4UGYlEdX0JAoheYU4b8ORP2WNg2VVzIrvv2wvTX0hWjyg6B2uoMjLRjzWGpiEQRnigF0025EPa0Cz"
-    );
+    const stripe = new Stripe(process.env.SK_STRIPE);
     const gig = await Gig.findById(req.params.id);
     const paymentIntent = await stripe.paymentIntents.create({
       amount: gig.price * 100,
@@ -62,7 +58,7 @@ export const intent = async (req, res, next) => {
       gigId: gig._id,
       img: gig.cover,
       title: gig.title,
-      buyerId: "64041851732bb7f4ea72aa00",
+      buyerId: req.userId,
       sellerId: gig.userId,
       price: gig.price,
       payment_intent: paymentIntent.id,
@@ -71,6 +67,22 @@ export const intent = async (req, res, next) => {
     res.status(200).json({
       clientSecret: paymentIntent.client_secret,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const confirm = async (req, res, next) => {
+  try {
+    const orders = await Order.findOneAndUpdate(
+      { payment_intent: req.body.payment_intent },
+      {
+        $set: {
+          isCompleted: true,
+        },
+      }
+    );
+    res.status(200).json("Order has been confirmed.");
   } catch (error) {
     next(error);
   }
