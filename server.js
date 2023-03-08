@@ -29,9 +29,9 @@ const connect = async () => {
     console.error(error);
   }
 };
-app.use("/api/successfull", (req, res) => {
-  res.json("Sucessfull");
-});
+// app.use("/api/successfull", (req, res) => {
+//   res.json("Sucessfull");
+// });
 
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
